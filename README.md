@@ -7,6 +7,7 @@ Student portfolio and banking microservices deployed with Docker Compose and NGI
 
 ## Project Overview
 
+
 This project connects three microservices:
 
 - **studentportfolio** — static HTML portfolio UI
