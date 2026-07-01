@@ -1,52 +1,84 @@
-# Project Overview
-The Student Portfolio Microservice aims to provide a platform where students can showcase their projects, skills, and academic achievements. It's built with scalability and modularity in mind, allowing for independent development and deployment of the frontend and backend components.
+# Pixel River Financial — Module 5 Part 3
+
+Student portfolio and banking microservices deployed with Docker Compose and NGINX.
+
+**Author:** Yixiang Qiu  
+**GitHub:** [RRC-SP2025-QiuYixiang](https://github.com/RRC-SP2025-QiuYixiang)
+
+## Project Overview
+
+This project connects three microservices:
+
+- **studentportfolio** — static HTML portfolio UI
+- **backend** — Python/Flask banking API (register, login, deposit, withdraw)
+- **transactions** — Node.js/Express service for monthly transaction reports
+
+All services are fronted by **NGINX** on port 80 and share a **MongoDB** database.
 
 ## Architecture
-**The application follows a simple microservice pattern:**
 
-## Frontend: A client-side application (e.g., React, Angular, Vue.js) responsible for the user interface and interactions.
+```
+Browser
+   |
+   v
+NGINX (:80)
+   |-- /              --> studentportfolio (static UI)
+   |-- /api/*         --> backend (Flask, :5000)
+   |-- /api/transactions --> transactions (Node.js, :3000)
+                              |
+                              v
+                           MongoDB (:27017)
+```
 
-    Frontend: A client-side application (e.g., React, Angular, Vue.js) responsible for the user interface and interactions.
+### Services
 
-    Backend: A server-side application (e.g., Node.js with Express, Python with Flask/Django, Java with Spring Boot) that handles business logic, API requests, and interacts with the database.
+| Service | Technology | Port | Role |
+|---------|------------|------|------|
+| nginx | NGINX Alpine | 80 | Reverse proxy / entry point |
+| studentportfolio | HTML + NGINX | 80 (internal) | Portfolio UI |
+| backend | Python + Flask | 5000 (internal) | Banking API |
+| transactions | Node.js + Express | 3000 (internal) | Transaction reports |
+| mongo | MongoDB 6 | 27017 (internal) | Database |
 
-    Transactions: A service specifically for managing and processing all financial transactions related to student portfolios, such as payments for premium features or certifications.
+### NGINX Routing
 
-    Nginx: Serves as the entry point for all incoming HTTP requests. It acts as a reverse proxy, directing requests to either the frontend static files or proxying API calls to the backend service.
+- `/api/transactions` → transactions service
+- `/api/` → backend service
+- `/` → studentportfolio
 
-    MongoDB: A NoSQL database used by the backend service to store all application data (e.g., student profiles, project details, skills).
-
-
-+------------------+     +-------------------+     +-------------------+     +--------------+
-|      Client      | <-> |   Nginx (Port 80) | <-> |     Frontend      |     |              |
-| (Web Browser)    |     | (Reverse Proxy)   |     | (Static Files)    |     |              |
-+------------------+     +-------------------+     +-------------------+     |   MongoDB    |
-                                   |                                         |  (Database)  |
-                                   | API Calls (via Nginx reverse proxy)     |              |
-                                   v                                         |              |
-                                +-------------------+ <---------------------+--------------+
-                                |      Backend      |
-                                |   (API Service)   |
-                                +-------------------+
-                                          |
-                                          |
-                                          v
-                                +-----------------------+
-                                |      Transactions     |
-                                | (Payment Processing)  |
-                                +-----------------------+
 ## Technologies Used
-    Frontend: [Specify your frontend framework/library, e.g., React, Angular, Vue.js, or just HTML/CSS/JS]
 
-    Backend: [Specify your backend language/framework, e.g., Node.js/Express, Python/Flask, Java/Spring Boot]
+- **Frontend:** HTML, CSS, Bootstrap, NGINX
+- **Backend:** Python, Flask, Flask-PyMongo
+- **Transactions:** Node.js, Express, MongoDB driver
+- **Database:** MongoDB
+- **Proxy:** NGINX
+- **Containerization:** Docker, Docker Compose
+- **CI/CD:** GitHub Actions
 
-    Transactions: [Specify the technology for the new transactions microservice, e.g., a dedicated microservice using Stripe, PayPal, or another payment gateway.]
+## Run Locally
 
-    Database: MongoDB
+```bash
+cd Module5_Part3
+docker compose up --build -d
+```
 
-    API Proxy/Web Server: Nginx
+Open `http://localhost/` for the portfolio.  
+Banking app: `http://localhost/api/login`  
+Transactions API: `http://localhost/api/transactions`
 
-    Containerization (Recommended): Docker, Docker Compose (for local development)
+## Stop and Clean Up
 
+```bash
+docker compose down -v
+```
 
+## Tests
 
+Backend tests run in CI via pytest with mongomock (no live MongoDB required).
+
+```bash
+cd backend
+pip install -r requirements.txt
+pytest -q
+```
